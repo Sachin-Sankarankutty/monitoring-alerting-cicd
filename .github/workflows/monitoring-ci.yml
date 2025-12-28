@@ -1,0 +1,35 @@
+name: Monitoring, Alerting & Dashboard CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  monitoring-validation:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install tools
+      run: |
+        sudo apt update
+        sudo apt install -y prometheus alertmanager jq
+
+    - name: Validate Prometheus config
+      run: |
+        promtool check config prometheus/prometheus.yml
+
+    - name: Validate Prometheus alert rules
+      run: |
+        promtool check rules prometheus/rules/*.yml
+
+    - name: Validate Alertmanager config
+      run: |
+        amtool check-config alertmanager/alertmanager.yml
+
+    - name: Validate Grafana dashboards
+      run: |
+        bash scripts/validate_dashboards.sh
